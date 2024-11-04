@@ -1,27 +1,33 @@
 import nltk
 from nltk.tokenize import WhitespaceTokenizer, WordPunctTokenizer, TreebankWordTokenizer
 from nltk.stem import PorterStemmer, WordNetLemmatizer
-from nltk.corpus import wordnet as wn
-from typing import List, Optional
+from config.configs import OptionalListStr, ListStr, TOKENIZATION_METHOD, TAG_DICT, NOUN
 
 nltk.download('wordnet')
 nltk.download('omw-1.4')
 nltk.download('averaged_perceptron_tagger')
 
 class TextPreprocessor:
-    def __init__(self, text: str) -> None:
+    def __init__(self) -> None:
         """
-        Initializes the TextPreprocessor with the input text.
+        Initializes the TextPreprocessor.
+        """
+        self.tag: str = None
+        self.stemmed_tokens: OptionalListStr = None
+        self.lemmatized_tokens: OptionalListStr = None
+        self.stemmer = PorterStemmer()
+        self.lemmatizer = WordNetLemmatizer()
+    
+    def set_text(self, text: str) -> None:
+        """
+        Set the input text for preprocessing.
 
         Args:
             text (str): The input string that needs preprocessing.
         """
-        self.text: str = text
-        self.tokens: Optional[List[str]] = None
-        self.stemmed_tokens: Optional[List[str]] = None
-        self.lemmatized_tokens: Optional[List[str]] = None
+        self.text = text
     
-    def tokenize(self, method: str = 'whitespace') -> List[str]:
+    def tokenize(self, method: str = TOKENIZATION_METHOD) -> ListStr:
         """
         Tokenizes the input text using the specified method.
 
@@ -33,8 +39,11 @@ class TextPreprocessor:
             ValueError: If an invalid tokenization method is specified.
 
         Returns:
-            List[str]: A list of tokens obtained after tokenization.
+            ListStr: A list of tokens obtained after tokenization.
         """
+        if self.text is None:
+            raise ValueError("Input text not set. Please set the text using the set_text method.")
+        
         if method == 'whitespace':
             tokenizer = WhitespaceTokenizer()
         elif method == 'word_punct':
@@ -59,52 +68,37 @@ class TextPreprocessor:
                  Returns 'n' for noun, 'v' for verb, 'a' for adjective,
                  'r' for adverb, or defaults to 'n' (noun) if the tag is unknown.
         """
-        tag = nltk.pos_tag([word])[0][1][0].lower()  # Get the first character of the POS tag
-        tag_dict = {
-            'a': wn.ADJ,       # adjective
-            's': wn.ADJ_SAT,   # satellite adjective
-            'r': wn.ADV,       # adverb
-            'n': wn.NOUN,      # noun
-            'v': wn.VERB       # verb
-        }
-        return tag_dict.get(tag, wn.NOUN)
+        self.tag = nltk.pos_tag([word])[0][1][0].lower() # Get the first character of the POS tag
+        return TAG_DICT.get(self.tag, NOUN)
     
-    def stemming(self, tokens: List[str]) -> List[str]:
+    def stemming(self, tokens) -> ListStr:
         """
-        Performs stemming on the given tokens.
-
-        Args:
-            tokens (List[str]): A list of tokens to perform stemming on.
+        Performs stemming on the tokens.
 
         Raises:
-            ValueError: If tokenization has not been performed before stemming.
+            ValueError: If tokenization has not been performed.
 
         Returns:
-            List[str]: A list of stemmed tokens.
+            ListStr: A list of stemmed tokens.
         """
         if self.tokens is None:
             raise ValueError("Tokenization not performed. Please call the tokenize method first.")
         
-        stemmer = PorterStemmer()
-        self.stemmed_tokens = [stemmer.stem(token) for token in tokens]
+        self.stemmed_tokens = [self.stemmer.stem(token) for token in tokens]
         return self.stemmed_tokens
     
-    def lemmatization(self, tokens: List[str]) -> List[str]:
+    def lemmatization(self, tokens) -> ListStr:
         """
-        Performs lemmatization on the given tokens.
-
-        Args:
-            tokens (List[str]): A list of tokens to perform lemmatization on.
+        Performs lemmatization on the tokens.
 
         Raises:
-            ValueError: If tokenization has not been performed before lemmatization.
+            ValueError: If tokenization has not been performed.
 
         Returns:
-            List[str]: A list of lemmatized tokens.
+            ListStr: A list of lemmatized tokens.
         """
         if self.tokens is None:
             raise ValueError("Tokenization not performed. Please call the tokenize method first.")
         
-        lemmatizer = WordNetLemmatizer()
-        self.lemmatized_tokens = [lemmatizer.lemmatize(token, pos=self.get_wordnet_pos(token)) for token in tokens]
+        self.lemmatized_tokens = [self.lemmatizer.lemmatize(token, pos=self.get_wordnet_pos(token)) for token in tokens]
         return self.lemmatized_tokens
