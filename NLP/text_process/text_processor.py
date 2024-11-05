@@ -3,10 +3,6 @@ from nltk.tokenize import WhitespaceTokenizer, WordPunctTokenizer, TreebankWordT
 from nltk.stem import PorterStemmer, WordNetLemmatizer
 from config.configs import OptionalListStr, ListStr, TOKENIZATION_METHOD, TAG_DICT, NOUN
 
-nltk.download('wordnet')
-nltk.download('omw-1.4')
-nltk.download('averaged_perceptron_tagger')
-
 class TextPreprocessor:
     def __init__(self) -> None:
         """
