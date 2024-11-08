@@ -1,7 +1,12 @@
 import nltk
 from nltk.tokenize import WhitespaceTokenizer, WordPunctTokenizer, TreebankWordTokenizer
 from nltk.stem import PorterStemmer, WordNetLemmatizer
-from config.configs import OptionalListStr, ListStr, TOKENIZATION_METHOD, TAG_DICT, NOUN
+from config.configs import OptionalListStr, ListStr, TOKENIZATION_METHOD, TAG_DICT, NOUN, WORDNET, OMW, AVERAGED_PERCEPTRON_TAGGER
+
+
+nltk.download(WORDNET)
+nltk.download(OMW)
+nltk.download(AVERAGED_PERCEPTRON_TAGGER)
 
 class TextPreprocessor:
     def __init__(self) -> None:
